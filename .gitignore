@@ -8,3 +8,6 @@ dist/
 tools/shots/
 tools/webhook-received.json
 tools/test-logo.png
+
+.vercel
+.env*
