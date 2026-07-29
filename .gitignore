@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.vercel/
+.astro/
+.env
+.env.*
+!env.example
+tools/shots/
+tools/webhook-received.json
+tools/test-logo.png

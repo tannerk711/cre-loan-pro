@@ -1,0 +1,33 @@
+---
+import Layout from '../layouts/Layout.astro';
+import OnboardingForm from '../components/OnboardingForm';
+---
+
+<Layout>
+  <div class="relative flex min-h-screen flex-col">
+    <div class="bg-grid pointer-events-none absolute inset-0" aria-hidden="true"></div>
+
+    <header class="relative z-10 mx-auto flex w-full max-w-3xl items-center justify-between px-5 pt-7">
+      <a href="https://creloanpro.com" class="flex items-center gap-2.5">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-ink">
+          <svg width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M20 40 L32 20 L44 40" fill="none" stroke="#1e5eff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
+            <circle cx="32" cy="46" r="5" fill="#ffffff"></circle>
+          </svg>
+        </span>
+        <span class="text-[15px] font-extrabold tracking-tight text-ink">CRE LOAN PRO</span>
+      </a>
+      <span class="hidden text-[11px] font-bold uppercase tracking-[0.18em] text-ink-faint sm:block">Broker intake</span>
+    </header>
+
+    <main class="relative z-10 mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:py-14">
+      <OnboardingForm client:load />
+    </main>
+
+    <footer class="relative z-10 mx-auto w-full max-w-3xl px-5 pb-8">
+      <p class="text-[12px] leading-relaxed text-ink-faint">
+        CRE Loan Pro. Your info goes to us and nowhere else, ever.
+      </p>
+    </footer>
+  </div>
+</Layout>
