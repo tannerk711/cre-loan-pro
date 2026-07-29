@@ -5,7 +5,11 @@ lead round-robin. CRE Loan Pro branded. Sent as a link AFTER the broker is alrea
 sold on a call; this is pure data collection, no pricing, no terms, no TCPA (B2B
 partner intake, not consumer lead capture).
 
-Built 2026-07-28. First draft, not yet deployed.
+Built 2026-07-28. **LIVE: https://clp-broker-onboarding.vercel.app** (Vercel
+project `clp-broker-onboarding`, team ai-wizard-junk). Repo:
+https://github.com/tannerk711/cre-loan-pro.git (this folder is the repo root).
+`LEAD_WEBHOOK_URL` is set in production to Tanner's Zapier catch hook; sample
+payloads fired and caught, Zap mapping is Tanner-side per WIRING.md.
 
 ## Stack
 
@@ -76,12 +80,29 @@ Env vars (copy `env.example` to `.env`, or set in Vercel):
 
 ## Launch checklist
 
-- [ ] Create the Zap (catch hook -> GHL), paste URL into `LEAD_WEBHOOK_URL`
-- [ ] Attach a Blob store to the Vercel project (one click) so logo/headshot uploads store
+- [x] Create the Zap catch hook, set `LEAD_WEBHOOK_URL` (done 2026-07-28; hook ends 447wvyq)
+- [x] `vercel project ls` first, then link/deploy (project `clp-broker-onboarding`, live)
+- [x] Sample payloads fired through localhost AND production; Zap has samples to map from
+- [ ] Tanner: map the Zap fields per WIRING.md
+- [ ] Attach a Blob store to the Vercel project (Storage -> Create -> Blob) so
+      logo/headshot uploads store; until then they arrive as "received but not stored"
 - [ ] Decide email path: Resend (set 3 env vars) or Zap-side emails
-- [ ] `vercel project ls` FIRST, then link/deploy (duplicate-project gotcha)
-- [ ] Pick the URL (suggestion: onboard.creloanpro.com or creloanpro.com/onboard)
-- [ ] Send Tanner's own cell through it once as a live test
+- [ ] Optional: custom domain (onboard.creloanpro.com) instead of the vercel.app URL
+- [ ] Send Tanner's own info through it once as the final live test
+
+## Lessons Learned
+
+- **[2026-07-28] Astro `checkOrigin` 403s the form's own submits behind Vercel's
+  proxy.** Production multipart POSTs to /api/onboard returned "Cross-site POST
+  form submissions are forbidden" even from the page's own browser context (and
+  curl with a matching Origin header). Dev never showed it. Fix: `security:
+  { checkOrigin: false }` in astro.config, safe here because the endpoint is
+  unauthenticated and cookie-free. ALWAYS run a real-browser submit against the
+  live deployment before calling a form shipped.
+- **[2026-07-28] Never pipe env values to `vercel env add` from PowerShell.**
+  The pipe appends CRLF, the stored URL ends in a control char, and the
+  serverless fetch throws "webhook unreachable". Use Git Bash
+  `printf '%s' 'value' | npx vercel env add ...` instead.
 
 ## Design
 
