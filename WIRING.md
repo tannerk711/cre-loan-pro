@@ -74,6 +74,38 @@ Tag the contact `broker-onboarding` in the same action step.
 (loanRange covers both), `secondsToComplete`, `receivedAt`, `submitIp`,
 `submitUserAgent`, `website` (honeypot, always empty).
 
+## Broker confirmation email (2nd Email action in the Zap)
+
+Action: Email by Zapier (or GHL email if you prefer it from your sending domain).
+Map the fields from the Step 1 catch hook where you see {{...}}.
+
+- **To:** {{leadEmail}}
+- **From name:** Tanner at CRE Loan Pro
+- **Reply-to:** tanner@creloanpro.com
+- **Subject:** You're in. Here's what happens next.
+
+Body:
+
+> Got everything, {{firstName}}.
+>
+> Your onboarding is locked in and your setup starts now. Give us 3 to 5
+> business days to verify your licensing, build your profile, and wire up
+> your lead delivery.
+>
+> Here's the play from here:
+>
+> Day 1: We verify your NMLS and state licensing.
+> Days 2-3: We build your profile and wire your delivery channels.
+> Days 4-5: You get a test lead to confirm everything fires.
+> Then you're live in the rotation for {{statesWanted}}. Real leads, real time.
+>
+> If anything changes before then, licensing, phone number, capacity, just
+> reply to this email or text me.
+>
+> Talk soon,
+> Tanner
+> CRE Loan Pro
+
 ## Re-firing the sample
 
 Any time the Zap needs a fresh sample record, ask Claude to "fire the
