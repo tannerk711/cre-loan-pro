@@ -86,10 +86,9 @@ Env vars (copy `env.example` to `.env`, or set in Vercel):
 - [x] Tanner mapped the Zap + Zap-side email working (confirmed 2026-07-29)
 - [x] Blob store `clp-onboarding-uploads` created via CLI + linked (2026-07-29);
       upload path verified live, blobs land at public URLs under `onboarding/`
-- [x] Email path: Zap-side (Resend env vars stay unset; the success screen
-      correctly does not promise a confirmation email). If Tanner wants the
-      broker "you're in, 3-5 days" email, add a second Email action in the Zap
-      to `leadEmail`, or set the 3 Resend env vars and redeploy.
+- [x] Email path: Zap-side, both emails live (notify + broker confirmation
+      added 2026-07-29 from the copy in WIRING.md; Resend env vars stay unset
+      by design)
 - [ ] Optional: custom domain (onboard.creloanpro.com) instead of the vercel.app URL
 - [ ] Send Tanner's own info through it once as the final live test
 
