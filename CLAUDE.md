@@ -14,7 +14,7 @@ payloads fired and caught, Zap mapping is Tanner-side per WIRING.md.
 ## Stack
 
 Astro 5 + React 19 island + Tailwind v4 + `@astrojs/vercel`. Static output, only
-`/api/onboard` runs serverless. Same pattern as `clients/dscr-funnel-template/`.
+`/api/onboard` runs serverless. Same pattern as `templates/funnels/dscr-1-private-credit`.
 
 - `npm run dev`: port 4321
 - `npm run build`: must pass before any commit
