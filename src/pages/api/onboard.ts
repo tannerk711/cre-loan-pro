@@ -231,7 +231,7 @@ function buildClaudePrompt(d: Record<string, unknown>): string {
     `Entity: ${v('billingEntity')} | Email: ${v('billingEmail')} | Method: ${v('paymentMethod')}`,
     ``,
     `TASKS`,
-    `1. Read clients/cre-loan-pro/onboarding/CLAUDE.md and clients/dscrbroker/CLAUDE.md first.`,
+    `1. Read clients/cre-loan-pro/funnels/broker-onboarding/CLAUDE.md and clients/dscrbroker/CLAUDE.md first.`,
     `2. Verify the NMLS ID and state licenses on NMLS Consumer Access; flag any mismatch with the states above.`,
     `3. Set up their profile and lead routing on dscrbroker.com for the states they want, using the assets above. If multi-broker round-robin infrastructure does not exist yet for those states, propose the build before touching anything live.`,
     `4. Configure delivery per the channels above and set their rotation weight from the monthly target. Treat loan range, products, and dealbreakers as routing filters.`,
