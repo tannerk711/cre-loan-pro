@@ -62,15 +62,31 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, error: 'bad payload' }, 400);
   }
 
-  // honeypot filled means bot. Return success so it learns nothing.
-  if (typeof data.website === 'string' && data.website.trim() !== '') {
-    return json({ ok: true, emailSent: false }, 200);
-  }
+  // Honeypot. The hidden field carries a name no autofill or password manager
+  // recognises, and a filled trap is only decisive when the whole 23-step
+  // form was "completed" in seconds. A human whose form filler hit the trap
+  // takes minutes; that submission goes through, flagged, instead of
+  // vanishing. (2026-10-06: a broker's submit returned 200 and reached
+  // nobody, and the old silent drop left nothing in the logs to say why.)
+  // `website` is the pre-rename field name; cached bundles still send it.
+  const who = () => JSON.stringify({ fullName: data.fullName, leadEmail: data.leadEmail });
+  const trap = [data.ob_hp, data.website].find((v) => typeof v === 'string' && v.trim() !== '');
+  delete data.ob_hp;
   delete data.website;
+  const seconds = Number(data.secondsToComplete);
+  data.honeypotFilled = trap !== undefined;
+  if (trap !== undefined) {
+    if (!Number.isFinite(seconds) || seconds < 20) {
+      console.warn(`[onboard] dropped: honeypot filled, form done in ${seconds}s`, who());
+      return json({ ok: true, emailSent: false }, 200);
+    }
+    console.warn(`[onboard] honeypot filled after ${seconds}s, forwarding flagged`, who());
+  }
 
   // minimal server-side sanity: the fields the round-robin cannot run without
   for (const req of ['fullName', 'nmls', 'leadPhone', 'leadEmail', 'statesLicensed']) {
     if (typeof data[req] !== 'string' || (data[req] as string).trim() === '') {
+      console.warn(`[onboard] rejected: missing ${req}`, who());
       return json({ ok: false, error: `missing ${req}` }, 400);
     }
   }
@@ -84,9 +100,12 @@ export const POST: APIRoute = async ({ request }) => {
     }
     try {
       const slug = String(data.fullName ?? 'broker').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      // random suffix: the SDK refuses to overwrite an existing pathname, so
+      // without it a broker who retries with the same file loses the upload
       const blob = await put(`onboarding/${slug}-${u.kind}-${u.file.name}`, u.file, {
         access: 'public',
         token: blobToken,
+        addRandomSuffix: true,
       });
       data[u.field] = blob.url;
     } catch (e) {
@@ -117,8 +136,25 @@ export const POST: APIRoute = async ({ request }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) return json({ ok: false, error: `webhook ${res.status}` }, 502);
-    } catch {
+      if (!res.ok) {
+        console.error(`[onboard] webhook answered ${res.status}`, who());
+        return json({ ok: false, error: `webhook ${res.status}` }, 502);
+      }
+      // one line per accepted submission, so "did it reach the Zap" is a log search
+      console.log(
+        `[onboard] accepted, webhook ${res.status}`,
+        JSON.stringify({
+          fullName: data.fullName,
+          leadEmail: data.leadEmail,
+          receivedAt: data.receivedAt,
+          ip: data.submitIp,
+          uploads: uploads.length,
+          seconds,
+          honeypotFilled: data.honeypotFilled,
+        }),
+      );
+    } catch (e) {
+      console.error('[onboard] webhook unreachable', who(), e);
       return json({ ok: false, error: 'webhook unreachable' }, 502);
     }
   } else {

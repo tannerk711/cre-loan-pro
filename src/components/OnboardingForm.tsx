@@ -231,7 +231,7 @@ export default function OnboardingForm() {
       paymentMethod: a.paymentMethod,
       notes: a.notes.trim() || null,
       secondsToComplete: Math.round((Date.now() - startedAt.current) / 1000),
-      website: (document.getElementById('ob-website') as HTMLInputElement | null)?.value ?? '',
+      ob_hp: (document.getElementById('ob-hp') as HTMLInputElement | null)?.value ?? '',
     };
     try {
       const fd = new FormData();
@@ -393,8 +393,21 @@ export default function OnboardingForm() {
         </div>
       </div>
 
-      {/* honeypot */}
-      <input id="ob-website" name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-px w-px opacity-0" />
+      {/* honeypot. Nonsense name on purpose: "website" got filled by form
+          fillers on real submits, and the server then dropped them silently.
+          The data-* attributes tell LastPass, 1Password and Dashlane to skip it. */}
+      <input
+        id="ob-hp"
+        name="ob_hp"
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        data-lpignore="true"
+        data-1p-ignore=""
+        data-form-type="other"
+        className="absolute -left-[9999px] h-px w-px opacity-0"
+      />
     </Card>
   );
 }

@@ -21,6 +21,24 @@ Astro 5 + React 19 island + Tailwind v4 + `@astrojs/vercel`. Static output, only
 - `node tools/qa.mjs [pass-name]`: full e2e walk (desktop + mobile), screenshots every
   key step to `tools/shots/`, verifies +1 phone-strip formatting, submits for real.
 
+## "A broker says they submitted and nothing came through"
+
+Three checks, in order, all read-only:
+
+1. `npx vercel logs --since 7d --expand` from this folder: every POST to
+   `/api/onboard` with its status. Since 2026-10-06 the function logs one line per
+   outcome (`accepted, webhook 200`, `dropped: honeypot`, `rejected: missing X`,
+   `webhook answered NNN`), so the line under the request says where it stopped.
+   A 200 with no `accepted` line is a cached pre-10/06 bundle hitting the old silent
+   honeypot. Retention is about a week.
+2. `npx vercel env pull .env.prod-tmp --environment=production --yes && node tools/blob-list.mjs`:
+   every logo/headshot in the Blob store with its upload time (the script deletes the
+   pulled env file). A blob means the request passed validation.
+3. Gmail: every Zap run sends "Onboarding complete for {first name}" from
+   tanner@creloanpro.com to himself. Request logged + no email = the Zap task errored
+   or was held; open Zap History in Zapier for that minute. Zapier answers 404 when
+   the Zap is off, which the API turns into a 502, so a 200 never means "Zap off".
+
 ## The flow
 
 Welcome screen -> 23 questions, one per screen, 5 sections -> success screen with a
@@ -105,6 +123,19 @@ Env vars (copy `env.example` to `.env`, or set in Vercel):
   The pipe appends CRLF, the stored URL ends in a control char, and the
   serverless fetch throws "webhook unreachable". Use Git Bash
   `printf '%s' 'value' | npx vercel env add ...` instead.
+- **[2026-10-06] A silent honeypot is a silent lead drop.** A broker's real submit
+  returned 200 and reached nobody; Tanner's own tests the day before went through.
+  The hidden field was named `website`, which form fillers and password managers
+  recognise and fill, and the server answered a filled trap with a fake success and
+  no log line, so there was no way to tell a bot catch from a lost broker. Now: the
+  field has a nonsense name plus the LastPass/1Password/Dashlane ignore attributes,
+  a filled trap only drops a submission "completed" in under 20 seconds (a human
+  needs minutes for 23 steps), anything slower is forwarded with
+  `honeypotFilled: true`, and every outcome logs one line. Never return a fake 200
+  without logging who was dropped.
+- **[2026-10-06] `@vercel/blob` v1+ refuses to overwrite an existing pathname.**
+  A broker retrying with the same logo filename lost the upload ("upload failed,
+  ask the broker to text it over"). `addRandomSuffix: true` on every `put`.
 
 ## Design
 
@@ -114,7 +145,3 @@ shadows, engineering-grid backdrop, Hanken Grotesk + Fragment Mono, blue #1e5eff
 ink #0a1a33. Motion kept lean on purpose (utility page, not a funnel): step
 transitions, progress bar, check-draw on success, all gated by
 `prefers-reduced-motion`.
-
-## Lessons Learned
-
-- (none yet)
