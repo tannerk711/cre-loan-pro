@@ -62,13 +62,10 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, error: 'bad payload' }, 400);
   }
 
-  // Honeypot. The hidden field carries a name no autofill or password manager
-  // recognises, and a filled trap is only decisive when the whole 23-step
-  // form was "completed" in seconds. A human whose form filler hit the trap
-  // takes minutes; that submission goes through, flagged, instead of
-  // vanishing. (2026-10-06: a broker's submit returned 200 and reached
-  // nobody, and the old silent drop left nothing in the logs to say why.)
-  // `website` is the pre-rename field name; cached bundles still send it.
+  // Honeypot is a LABEL, never a gate (Tanner, 2026-10-06: every complete
+  // submit fires the Zap and becomes a lead). A filled trap travels as
+  // honeypotFilled: true on the payload and gets one log line; nothing is
+  // dropped. The pre-rename trap key is still read for cached bundles.
   const who = () => JSON.stringify({ fullName: data.fullName, leadEmail: data.leadEmail });
   const trap = [data.ob_hp, data.website].find((v) => typeof v === 'string' && v.trim() !== '');
   delete data.ob_hp;
@@ -76,11 +73,7 @@ export const POST: APIRoute = async ({ request }) => {
   const seconds = Number(data.secondsToComplete);
   data.honeypotFilled = trap !== undefined;
   if (trap !== undefined) {
-    if (!Number.isFinite(seconds) || seconds < 20) {
-      console.warn(`[onboard] dropped: honeypot filled, form done in ${seconds}s`, who());
-      return json({ ok: true, emailSent: false }, 200);
-    }
-    console.warn(`[onboard] honeypot filled after ${seconds}s, forwarding flagged`, who());
+    console.warn(`[onboard] trap filled (${seconds}s), forwarding flagged`, who());
   }
 
   // minimal server-side sanity: the fields the round-robin cannot run without
