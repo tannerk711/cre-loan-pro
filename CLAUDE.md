@@ -27,7 +27,7 @@ Three checks, in order, all read-only:
 
 1. `npx vercel logs --since 7d --expand` from this folder: every POST to
    `/api/onboard` with its status. Since 2026-10-06 the function logs one line per
-   outcome (`accepted, webhook 200`, `dropped: honeypot`, `rejected: missing X`,
+   outcome (`accepted, webhook 200`, `trap filled (Ns), forwarding flagged`, `rejected: missing X`,
    `webhook answered NNN`), so the line under the request says where it stopped.
    A 200 with no `accepted` line is a cached pre-10/06 bundle hitting the old silent
    honeypot. Retention is about a week.
@@ -129,10 +129,10 @@ Env vars (copy `env.example` to `.env`, or set in Vercel):
   recognise and fill, and the server answered a filled trap with a fake success and
   no log line, so there was no way to tell a bot catch from a lost broker. Now: the
   field has a nonsense name plus the LastPass/1Password/Dashlane ignore attributes,
-  a filled trap only drops a submission "completed" in under 20 seconds (a human
-  needs minutes for 23 steps), anything slower is forwarded with
-  `honeypotFilled: true`, and every outcome logs one line. Never return a fake 200
-  without logging who was dropped.
+  a filled trap is a label only: the submit forwards with `honeypotFilled: true`
+  (the 20-second drop window from the first fix went the same evening; Tanner:
+  every complete submit fires the Zap, onboarding forms included), and every
+  outcome logs one line. Never a success response without the Zap answering 2xx.
 - **[2026-10-06] `@vercel/blob` v1+ refuses to overwrite an existing pathname.**
   A broker retrying with the same logo filename lost the upload ("upload failed,
   ask the broker to text it over"). `addRandomSuffix: true` on every `put`.
